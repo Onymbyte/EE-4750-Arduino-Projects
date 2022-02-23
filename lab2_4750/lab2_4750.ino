@@ -4,21 +4,21 @@
 // initialize the library with the numbers of the interface pins
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+  
+int brightnessPin = 9;
+int pMatrixPin = 10;
+  
 void setup()                                                                                     
 {
 // set up the LCD's number of columns and rows:
   lcd.begin(16,2);
-  
+  pinMode(brightnessPin, OUTPUT);
+  pinMode(pMatrixPin, OUTPUT);
 }
 
 void loop()
 {
-  int brightnessPin = 9;
-  pinMode(brightnessPin, OUTPUT);
   analogWrite(brightnessPin, 255);
-
-  int pMatrixPin = 10;
-  pinMode(pMatrixPin, OUTPUT);
   analogWrite(pMatrixPin, 100);
   
 // Print a message to the LCD.
@@ -28,11 +28,11 @@ void loop()
   lcd.print("Go LSU!");
   delay(2000);
 
-for (int positionCounter = 0; positionCounter < 12; positionCounter++) 
+for (int positionCounter = 0; positionCounter < 1; positionCounter++) 
     {
     // scroll one position right:
     lcd.scrollDisplayRight();
-    delay(300);
+    delay(2000);
     }
 
 // Clear display
@@ -45,11 +45,11 @@ for (int positionCounter = 0; positionCounter < 12; positionCounter++)
   lcd.print("Go LSU!");
   delay(2000);
 
-for (int positionCounter = 0; positionCounter < 12; positionCounter++) 
+for (int positionCounter = 0; positionCounter < 1; positionCounter++) 
     {
     // scroll one position left:
     lcd.scrollDisplayLeft();
-    delay(300);
+    delay(2000);
     }
   
 
@@ -82,11 +82,11 @@ for (int brightnessCounter = 255; brightnessCounter > 0; brightnessCounter = bri
     delay(150);
     }
 
- for (int positionCounter = 0; positionCounter < 12; positionCounter++) 
+ for (int positionCounter = 0; positionCounter < 1; positionCounter++) 
     {
     // scroll one position right:
     lcd.scrollDisplayRight();
-    delay(300);
+    delay(2000);
     }
 
     lcd.clear();
