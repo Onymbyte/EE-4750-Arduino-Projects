@@ -1,5 +1,3 @@
-#include <LiquidCrystal.h>
-
 /*
  * Lab1
  * Author: Jameson Connor Harrington
