@@ -1,5 +1,6 @@
 /*
  * Author: Scott Boudreaux
+ * Lab Partner: Jameson Connor Harrington
  */
 // initialize the library with the numbers of the interface pins
 #include <LiquidCrystal.h>
