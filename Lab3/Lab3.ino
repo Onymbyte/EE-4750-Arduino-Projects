@@ -11,18 +11,12 @@ void setup() {
   lcd.begin(16,2);
   Serial.begin(9600);
   Serial.println("Please write your favorite line");
-  lcd.setCursor(0,0);
-  lcd.print("Scott & Jameson");
-  lcd.setCursor(0,1);
-  lcd.print("EE4750 Section 3");
+  displayStr("Scott & Jameson");
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if
-  lcd.scrollDisplayLeft();
-  delay(500);
   if(Serial.available() > 0) {
     in_byte = Serial.read();
      if (in_byte != '\n' && str.length() < 128) {
@@ -33,15 +27,17 @@ void loop() {
       Serial.println(str);
       Serial.println(str.length());
       Serial.flush();
-    
-      lcd.clear();
       
-      lcd.setCursor(0,0);
-      lcd.print(str);
-      lcd.setCursor(0,1);
-      lcd.print("EE4750 Section 3");
+      displayStr(str);
       
       str = "";
      }
   }
+}
+void displayStr(String newStr) {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(newStr);
+  lcd.setCursor(0,1);
+  lcd.print("EE4750 Section 3");
 }
