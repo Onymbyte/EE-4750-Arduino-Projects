@@ -23,12 +23,13 @@ void loop() {
       str += in_byte;
      }
      else {
-      Serial.println("Thanks for your input. You have typed");
+      Serial.println("Thanks for your input. You have typed:");
       Serial.println(str);
       int len = str.length();
       Serial.println(len);
       Serial.flush();
 
+      randomSeed(analogRead(0));
       address = random(EEPROM.length() - str.length()-1);
       
       EEPROM.write(address, str.length());
@@ -36,22 +37,20 @@ void loop() {
         EEPROM.write(address+1+i, str[i]);
       }
       str = "";
-      //EEPROM.get(1, str);
       for(int i = 0; i < len; i++) {
-        Serial.println(char(EEPROM.read(address+1+i)));
+        char newChar = char(EEPROM.read(address+1+i));
+        Serial.println(String(address+1+i) + " is the location for my input to store: " + newChar);
+        str += newChar; 
       }
-      
-      
-      
-      //EEPROM.put(EEPROM.length() - str.length(), str);
-      //EEPROM.get(EEPROM.length() - str.length(), str);
       Serial.println(str);
-      Serial.println("YO YO YO");
-      //EEPROM.put(address, str);
-      
       displayStr(str);
+      delay(3000);
       
       str = "";
+      
+      Serial.println("Please write your favorite line");
+      displayStr("Scott & Jameson");
+   
      }
   }
 }
@@ -68,16 +67,17 @@ void displayStr(String newStr) {
     lcd.print(newStr);
     lcd.setCursor(0,1);
     lcd.print("EE4750 Section 3");
-    for(int i = 0; i < newStr.length();i++){
+    for(int i = 0; i < newStr.length() - 16 ;i++){
       lcd.scrollDisplayLeft();
-      delay(200);
+      delay(500);
     }
   }
   else {
     String tempStr = newStr;
-    for(int i = 0; i < newStr.length() % 40; i++)
+    for(int i = 0; i < 40 - newStr.length() % 40; i++)
       tempStr += " ";
-    for(int i = 0; i < newStr.length(); i++) {
+    //Serial.println(tempStr.length());
+    for(int i = 0; i < newStr.length() - 16; i++) {
       if(i == 0) {
         lcd.setCursor(0,1);
         lcd.print("EE4750 Section 3");
@@ -85,14 +85,14 @@ void displayStr(String newStr) {
       if(i % 40 == 0) {
         //lcd.clear();
         lcd.setCursor(0,0);
-        Serial.println(i);
-        Serial.println(tempStr.substring(i, i+40));
+        //Serial.println(i);
+        //Serial.println(tempStr.substring(i, i+40));
         lcd.print(tempStr.substring(i, i+40));
       }
       else if(i % 20 == 0){
         lcd.setCursor(0,0);
-        Serial.println(i);
-        Serial.println(tempStr.substring(i+20, i+40));
+        //Serial.println(i);
+        //Serial.println(tempStr.substring(i+20, i+40));
         lcd.print(tempStr.substring(i+20, i+40));
         
       }
@@ -102,5 +102,5 @@ void displayStr(String newStr) {
   }
 
 }
-//  
+//0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999aaaaaaaaaabbbbbbbbbbcccccccc
   
