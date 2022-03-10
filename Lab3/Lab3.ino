@@ -5,7 +5,7 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 char in_byte = 0;
 String str = "";
-int counter = 0;
+int address = 0;
 void setup() {
   // put your setup code here, to run once:
   lcd.begin(16,2);
@@ -25,8 +25,29 @@ void loop() {
      else {
       Serial.println("Thanks for your input. You have typed");
       Serial.println(str);
-      Serial.println(str.length());
+      int len = str.length();
+      Serial.println(len);
       Serial.flush();
+
+      address = random(EEPROM.length() - str.length()-1);
+      
+      EEPROM.write(address, str.length());
+      for(int i=0; i < str.length(); i++){
+        EEPROM.write(address+1+i, str[i]);
+      }
+      str = "";
+      //EEPROM.get(1, str);
+      for(int i = 0; i < len; i++) {
+        Serial.println(char(EEPROM.read(address+1+i)));
+      }
+      
+      
+      
+      //EEPROM.put(EEPROM.length() - str.length(), str);
+      //EEPROM.get(EEPROM.length() - str.length(), str);
+      Serial.println(str);
+      Serial.println("YO YO YO");
+      //EEPROM.put(address, str);
       
       displayStr(str);
       
@@ -34,6 +55,7 @@ void loop() {
      }
   }
 }
+
 void displayStr(String newStr) {
   lcd.clear();
   lcd.setCursor(0,0);
@@ -75,10 +97,10 @@ void displayStr(String newStr) {
         
       }
       lcd.scrollDisplayLeft();
-      delay(200);
+      delay(500);
     }
   }
 
 }
-//0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999aaaaaaaaaabbbbbbbbbbcccccccc
+//  
   
