@@ -87,7 +87,7 @@ void displayStr(String newStr) {
       delay(500);
     }
   } 
-  else {                          // For longer strings scroll around replace begining of string while scrolling
+  else {                          // For longer strings scroll around replace beginning of string while scrolling
     // Adding some padding for printing
     String tempStr = newStr;
     for(int i = 0; i < 40 - newStr.length() % 40; i++)
