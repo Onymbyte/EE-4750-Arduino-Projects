@@ -17,7 +17,6 @@ void setup() {
   // Display initial line and prompt user
   Serial.println("Please write your favorite line");
   displayStr("Scott & Jameson");
-
 }
 
 //Function that loops indefinitely while board runs
@@ -63,7 +62,6 @@ void loop() {
       str = "";
       Serial.println("Please write your favorite line");
       displayStr("Scott & Jameson");
-   
      }
   }
 }
@@ -105,7 +103,6 @@ void displayStr(String newStr) {
       else if(i % 20 == 0){       //Every 20 characters replace the first 20 characters
         lcd.setCursor(0,0);
         lcd.print(tempStr.substring(i+20, i+40));
-        
       }
       lcd.scrollDisplayLeft();
       delay(500);
