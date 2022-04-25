@@ -1,5 +1,0 @@
-{
-    "board": "arduino:samd:mkrwifi1010",
-    "port": "COM5",
-    "sketch": "Tama_Final_Project.ino"
-}
