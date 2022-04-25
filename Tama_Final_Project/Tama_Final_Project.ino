@@ -15,6 +15,8 @@ bool on;
 unsigned long pressTime;
 bool offPress = false;
 auto timer = timer_create_default();
+uint16_t background = ST77XX_WHITE;
+bool eating = false;
 
 
 
@@ -38,7 +40,7 @@ void loop() {
   timer.tick();
   carrier.Buttons.update();
   
-  if(carrier.Buttons.onTouchChange(TOUCH2)){
+  if(carrier.Button2.onTouchChange()){
     if(offPress){
       if (pressTime + 1000 <= millis()){
         on = !on;
@@ -56,7 +58,12 @@ void loop() {
     //statusBar(70, 70, ST77XX_ORANGE, "Hunger", hunger);
     //statusBar(70, 90, ST77XX_YELLOW, "Happiness", happiness);
     //carrier.display.fillCircle(120, 120, 115, ST77XX_BLACK);
-    carrier.display.drawBitmap(120, 120, myBitmap, 32, 32, ST77XX_BLACK);
+    uint16_t size = 96;
+    carrier.display.fillRect(120-size/2, 120-size/2, size, size, ST7735_BLUE);
+    if(carrier.Button3.onTouchDown() && !eating){
+      feed();
+    }
+ 
   }
   
 
@@ -65,7 +72,7 @@ void loop() {
 
 void initDisplay() {
   carrier.display.setRotation(0);
-  carrier.display.fillScreen(ST77XX_WHITE);
+  carrier.display.fillScreen(background);
   statusBar(70, 170, ST77XX_ORANGE, "Hunger", hunger);
   statusBar(70, 190, ST77XX_YELLOW, "Happiness", happiness);
 }
@@ -80,12 +87,12 @@ void statusBar(int x, int y, uint16_t color, String nameOf, int percentage) {
   carrier.display.print(nameOf);
   
   carrier.display.drawRect(x,y+height,width,height,ST77XX_BLACK);
-  carrier.display.fillRect(x+1, y+height+1, 100, height-2, ST77XX_WHITE);
+  carrier.display.fillRect(x+1, y+height+1, 100, height-2, background);
   if (percentage <= 100)
     carrier.display.fillRect(x+1, y+height+1, percentage, height-2, color);
   else carrier.display.fillRect(x+1, y+height+1, 100, height-2, color);
 
-  carrier.display.fillRect(x+width+1, y+height+1, 50, height, ST77XX_WHITE);
+  carrier.display.fillRect(x+width+1, y+height+1, 50, height, background);
   carrier.display.setCursor(x+width+1, y+height+1);
   carrier.display.print(String(percentage)+"%");
   //carrier.display.print(String(percentage)+"/100");
@@ -94,7 +101,7 @@ void statusBar(int x, int y, uint16_t color, String nameOf, int percentage) {
 bool updateTemperature(void *) {
   temperature = carrier.Env.readTemperature(FAHRENHEIT);
   carrier.display.setCursor(70, 30);
-  carrier.display.fillRect(70, 30, 50, 10, ST77XX_WHITE);
+  carrier.display.fillRect(70, 30, 50, 10, background);
   carrier.display.print(temperature);
   return true;
 }
@@ -116,4 +123,16 @@ bool updateStat(void *) {
 
   
   return true;
+}
+void feed() {
+  eating = true;
+  carrier.display.drawRGBBitmap(180, 100, myBitmap, 32, 32);
+  timer.in(500, [] (void *) -> bool {carrier.display.fillRect(180, 100, 8, 32, background);});
+  timer.in(1000, [] (void *) -> bool {carrier.display.fillRect(180, 100, 16, 32, background);});
+  timer.in(1500, [] (void *) -> bool {carrier.display.fillRect(180, 100, 24, 32, background);});
+  timer.in(2000, [] (void *) -> bool {
+    carrier.display.fillRect(180, 100, 32, 32, background);
+    hunger += 30;
+    eating = false;
+    });
 }
