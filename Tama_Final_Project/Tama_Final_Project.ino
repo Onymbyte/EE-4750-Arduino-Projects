@@ -1,3 +1,14 @@
+/*
+Dog sprites were made by Dawn for Stardew Valley at this link:
+https://community.playstarbound.com/threads/fluffy-dogs-other-alternative-dog-sprites-update-8-pug-time.109948/
+
+Pork Chop Icon:
+<a href="https://www.flaticon.com/free-icons/beef" title="beef icons">Beef icons created by Freepik - Flaticon</a>
+
+Tennis Ball Icon:
+<a href="https://www.flaticon.com/free-icons/ball" title="ball icons">Ball icons created by Freepik - Flaticon</a>
+
+*/
 #include <Arduino_MKRIoTCarrier.h>
 #include <arduino-timer.h>
 #include "bitmaps.h"
@@ -15,8 +26,12 @@ bool on;
 unsigned long pressTime;
 bool offPress = false;
 auto timer = timer_create_default();
-uint16_t background = ST77XX_WHITE;
+uint16_t background = 0xAF9F;
+uint16_t lower_background = 0x5E4B;
 bool eating = false;
+// Dog state by index [sit, sad, sleep, eating, running]
+bool prevDogState [] = {true, false, false, false, false};
+bool dogState [] = {true, false, false, false, false};
 
 
 
@@ -27,7 +42,6 @@ void setup() {
   pinMode(TFT_BACKLIGHT, OUTPUT);
   carrier.begin();
   initDisplay();
-
   
   on = true;
 
@@ -58,10 +72,12 @@ void loop() {
     //statusBar(70, 70, ST77XX_ORANGE, "Hunger", hunger);
     //statusBar(70, 90, ST77XX_YELLOW, "Happiness", happiness);
     //carrier.display.fillCircle(120, 120, 115, ST77XX_BLACK);
-    uint16_t size = 96;
-    carrier.display.fillRect(120-size/2, 120-size/2, size, size, ST7735_BLUE);
-    if(carrier.Button3.onTouchDown() && !eating){
+    
+    if(carrier.Button3.onTouchDown() && dogState[0]){
       feed();
+    }
+    if(carrier.Button4.onTouchDown() && dogState[0]){
+      play();
     }
  
   }
@@ -73,8 +89,14 @@ void loop() {
 void initDisplay() {
   carrier.display.setRotation(0);
   carrier.display.fillScreen(background);
+  carrier.display.fillRect(0, 140,240,100, lower_background);
   statusBar(70, 170, ST77XX_ORANGE, "Hunger", hunger);
   statusBar(70, 190, ST77XX_YELLOW, "Happiness", happiness);
+  carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42,66);
+  delay(1000);
+  carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+  carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+  carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag1_42_66, 42,66);
 }
 
 void statusBar(int x, int y, uint16_t color, String nameOf, int percentage) {
@@ -87,12 +109,12 @@ void statusBar(int x, int y, uint16_t color, String nameOf, int percentage) {
   carrier.display.print(nameOf);
   
   carrier.display.drawRect(x,y+height,width,height,ST77XX_BLACK);
-  carrier.display.fillRect(x+1, y+height+1, 100, height-2, background);
+  carrier.display.fillRect(x+1, y+height+1, 100, height-2, ST77XX_WHITE);
   if (percentage <= 100)
     carrier.display.fillRect(x+1, y+height+1, percentage, height-2, color);
   else carrier.display.fillRect(x+1, y+height+1, 100, height-2, color);
 
-  carrier.display.fillRect(x+width+1, y+height+1, 50, height, background);
+  carrier.display.fillRect(x+width+1, y+height+1, 50, height, lower_background);
   carrier.display.setCursor(x+width+1, y+height+1);
   carrier.display.print(String(percentage)+"%");
   //carrier.display.print(String(percentage)+"/100");
@@ -103,6 +125,7 @@ bool updateTemperature(void *) {
   carrier.display.setCursor(70, 30);
   carrier.display.fillRect(70, 30, 50, 10, background);
   carrier.display.print(temperature);
+  
   return true;
 }
 
@@ -120,19 +143,80 @@ bool updateStat(void *) {
   }
   statusBar(70, 170, ST77XX_ORANGE, "Hunger", hunger);
   statusBar(70, 190, ST77XX_YELLOW, "Happiness", happiness);
-
+  
   
   return true;
 }
 void feed() {
   eating = true;
-  carrier.display.drawRGBBitmap(180, 100, myBitmap, 32, 32);
-  timer.in(500, [] (void *) -> bool {carrier.display.fillRect(180, 100, 8, 32, background);});
-  timer.in(1000, [] (void *) -> bool {carrier.display.fillRect(180, 100, 16, 32, background);});
-  timer.in(1500, [] (void *) -> bool {carrier.display.fillRect(180, 100, 24, 32, background);});
+  for (int i=0; i<5; i++)
+    dogState[i] = false;
+  dogState[3] = true;
+  carrier.display.drawRGBBitmap(168, 100, steak, 32, 32);
+  carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+  carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+  carrier.display.drawRGBBitmap(120-72/2, 120-66/2, dog_eating0_72_66, 72, 66);
+  timer.in(500, [] (void *) -> bool {
+    carrier.display.fillRect(168, 100, 8, 32, background);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-72/2, 120-66/2, dog_eating1_72_66, 72, 66);
+    });
+  timer.in(1000, [] (void *) -> bool {
+    carrier.display.fillRect(168, 100, 16, 32, background);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-72/2, 120-66/2, dog_eating0_72_66, 72, 66);
+    });
+  timer.in(1500, [] (void *) -> bool {
+    carrier.display.fillRect(168, 100, 24, 32, background);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-72/2, 120-66/2, dog_eating1_72_66, 72, 66);
+    });
   timer.in(2000, [] (void *) -> bool {
-    carrier.display.fillRect(180, 100, 32, 32, background);
-    hunger += 30;
-    eating = false;
+    carrier.display.fillRect(168, 100, 32, 32, background);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42, 66);
+    hunger = min(hunger+30, 125);
+    dogState[3] = false;
+    dogState[0] = true;
     });
 }
+void play() {
+  for (int i=0; i<5; i++)
+    dogState[i] = false;
+  dogState[4] = true;
+  carrier.display.drawRGBBitmap(180, 140, ball, 32, 32);
+  carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+  carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+  carrier.display.drawRGBBitmap(120-90/2, 120-63/2, dog_run0_90_63, 90, 63);
+  timer.in(750, [] (void *) -> bool {
+    happiness = min(happiness+10,100);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-90/2, 120-63/2, dog_run1_90_63, 90, 63);
+    });
+  timer.in(750*2, [] (void *) -> bool {
+    happiness = min(happiness+30,100);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-90/2, 120-63/2, dog_run2_90_63, 90, 63);
+    });
+  timer.in(750*3, [] (void *) -> bool {
+    happiness = min(happiness+10,100);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-90/2, 120-63/2, dog_run0_90_63, 90, 63);
+    });
+  timer.in(750*4, [] (void *) -> bool {
+    carrier.display.fillRect(180, 140, 32, 32, lower_background);
+    carrier.display.fillRect(120-96/2, 120-96/2,96,78, background);
+    carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
+    carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42, 66);
+    dogState[4] = false;
+    dogState[0] = true;
+    });
+}
+
