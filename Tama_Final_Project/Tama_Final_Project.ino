@@ -29,9 +29,12 @@ auto timer = timer_create_default();
 uint16_t background = 0xAF9F;
 uint16_t lower_background = 0x5E4B;
 bool eating = false;
-// Dog state by index [sit, sad, sleep, eating, running]
-bool prevDogState [] = {true, false, false, false, false};
-bool dogState [] = {true, false, false, false, false};
+// Dog state 0:sit, 1:sad, 2:sleep, 3:eating, 4:running
+uint8_t prevDogState = 0;
+// Dog state 0:sit, 1:sad, 2:sleep, 3:eating, 4:running
+uint8_t dogState = 0;
+// Sleep time in ms
+int sleepTime = 5000;
 
 
 
@@ -46,7 +49,7 @@ void setup() {
   on = true;
 
   timer.every(5000, updateTemperature);
-  timer.every(1000, updateStat);
+  timer.every(2000, updateStat);
 
 }
 
@@ -72,13 +75,16 @@ void loop() {
     //statusBar(70, 70, ST77XX_ORANGE, "Hunger", hunger);
     //statusBar(70, 90, ST77XX_YELLOW, "Happiness", happiness);
     //carrier.display.fillCircle(120, 120, 115, ST77XX_BLACK);
-    
-    if(carrier.Button3.onTouchDown() && (dogState[0] || dogState[2])){
+    if(dogState == 0 || dogState == 1 || dogState == 2){
+      if(carrier.Button3.onTouchDown()){
       feed();
+      }
+      if(carrier.Button4.onTouchDown()){
+        play();
+      }
     }
-    if(carrier.Button4.onTouchDown() && (dogState[0] || dogState[2])){
-      play();
-    }
+    
+    
  
   }
   
@@ -93,7 +99,7 @@ void initDisplay() {
   statusBar(70, 170, ST77XX_ORANGE, "Hunger", hunger);
   statusBar(70, 190, ST77XX_YELLOW, "Happiness", happiness);
   carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag1_42_66, 42,66);
-  timer.every(10000, sit0);
+  timer.every(1000, sit0);
 }
 
 void statusBar(int x, int y, uint16_t color, String nameOf, int percentage) {
@@ -140,16 +146,25 @@ bool updateStat(void *) {
   }
   statusBar(70, 170, ST77XX_ORANGE, "Hunger", hunger);
   statusBar(70, 190, ST77XX_YELLOW, "Happiness", happiness);
-  
+  if(dogState == 3 || dogState == 4)
+    return true;
+  if(happiness <= 25 || hunger <= 25 && !(dogState == 3 || dogState == 4)){
+    prevDogState = dogState;
+    dogState = 1;
+  }
+  carrier.display.setCursor(120, 30);
+  carrier.display.fillRect(120, 30, 10, 10, background);
+  carrier.display.print(prevDogState);
+  carrier.display.setCursor(130, 30);
+  carrier.display.fillRect(130, 30, 10, 10, background);
+  carrier.display.print(dogState);
   
   return true;
 }
 void feed() {
   lastActionTime = millis();
-  eating = true;
-  for (int i=0; i<5; i++)
-    dogState[i] = false;
-  dogState[3] = true;
+  prevDogState = dogState;
+  dogState = 3;
   carrier.display.drawRGBBitmap(168, 100, steak, 32, 32);
   clearPetArea();
   carrier.display.drawRGBBitmap(120-72/2, 120-66/2, dog_eating0_72_66, 72, 66);
@@ -173,16 +188,14 @@ void feed() {
     clearPetArea();
     carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42, 66);
     hunger = min(hunger+30, 125);
-    for (int i=0; i<5; i++)
-      dogState[i] = false;
-    dogState[0] = true;
+    prevDogState = dogState;
+    dogState = 0;
     });
 }
 void play() {
   lastActionTime = millis();
-  for (int i=0; i<5; i++)
-    dogState[i] = false;
-  dogState[4] = true;
+  prevDogState = dogState;
+  dogState = 4;
   carrier.display.drawRGBBitmap(180, 140, ball, 32, 32);
   clearPetArea();
   carrier.display.drawRGBBitmap(120-90/2, 120-63/2, dog_run0_90_63, 90, 63);
@@ -205,9 +218,8 @@ void play() {
     carrier.display.fillRect(180, 140, 32, 32, lower_background);
     clearPetArea();
     carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42, 66);
-    for (int i=0; i<5; i++)
-      dogState[i] = false;
-    dogState[0] = true;
+    prevDogState =  4;
+    dogState = 0;
     });
 }
 
@@ -216,21 +228,34 @@ void clearPetArea(){
   carrier.display.fillRect(120-96/2, 140,96,18, lower_background);
 }
 bool sit0(void *){
-  if(dogState[0]){
-    if(millis() - lastActionTime > 5000){
-      dogState[0] = false;
-      dogState[2] = true;
+  if(dogState == 3 || dogState == 4)
+    return true;
+  if(dogState == 0){
+    if(millis() - lastActionTime > sleepTime){
+      prevDogState = 0;
+      dogState = 2;
       clearPetArea();
       carrier.display.drawRGBBitmap(120-78/2, 120-34/2, dog_sleeping_78_54, 78,54);
+      return true;
     }
-    else {
+    else if(prevDogState != dogState){
       clearPetArea();
       carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_tailWag0_42_66, 42,66);
+      prevDogState = dogState;
     }
   }
-  if(dogState[2] && millis() - lastActionTime <= 5000){
-    dogState[2] = false;
-    dogState[0] = true;
+  else if(dogState == 2 && millis() - lastActionTime <= sleepTime){
+    prevDogState = 2;
+    dogState = 0;
+    return true;
   }
+  else if(dogState == 1 && prevDogState != dogState){
+    clearPetArea();
+    carrier.display.drawRGBBitmap(120-42/2, 120-66/2, dog_sad_42_66, 42,66);
+    prevDogState = dogState;
+  }
+  
+
   return true;
+  
 }
